@@ -25,6 +25,7 @@ type BulkOrderLine = {
     don_vi: string;
     so_luong: string;
     don_gia: string;
+    ghi_chu: string;
 };
 
 type BulkOrderModalProps = {
@@ -51,15 +52,58 @@ const createEmptyLine = (): BulkOrderLine => {
         ma_sp: "",
         don_vi: "",
         so_luong: "",
-        don_gia: ""
+        don_gia: "",
+        ghi_chu: ""
     };
+};
+
+const priceInputFormatter = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 0
+});
+
+const formatMoneyText = (value: number) => {
+    return `${priceInputFormatter.format(value)} đ`;
+};
+
+const parseFormattedNumber = (value: string) => {
+    const normalizedValue = value
+        .replace(/,/g, "")
+        .trim();
+
+    if (normalizedValue === "") {
+        return Number.NaN;
+    }
+
+    return Number(normalizedValue);
+};
+
+const formatPriceInputValue = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+
+    if (digits === "") {
+        return "";
+    }
+
+    return priceInputFormatter.format(Number(digits));
+};
+
+const getLineAmount = (line: BulkOrderLine) => {
+    const quantity = Number(line.so_luong);
+    const price = parseFormattedNumber(line.don_gia);
+
+    if (Number.isNaN(quantity) || Number.isNaN(price)) {
+        return 0;
+    }
+
+    return quantity * price;
 };
 
 const getNumberValidationMessage = (
     label: string,
-    value: string
+    value: string,
+    parser: (nextValue: string) => number = Number
 ) => {
-    const numericValue = Number(value);
+    const numericValue = parser(value);
 
     if (value.trim() === "" || Number.isNaN(numericValue) || numericValue <= 0) {
         return `${label} phải là số lớn hơn 0`;
@@ -87,6 +131,14 @@ export default function BulkOrderModal(props: BulkOrderModalProps) {
     });
     const [message, setMessage] = useState<string>("");
     const [isSaving, setIsSaving] = useState<boolean>(false);
+    const totalAmount = useMemo(() => {
+        return lines.reduce(
+            (total, line) => {
+                return total + getLineAmount(line);
+            },
+            0
+        );
+    }, [lines]);
 
     const text = useMemo(() => {
         if (mode === "returns") {
@@ -140,7 +192,7 @@ export default function BulkOrderModal(props: BulkOrderModalProps) {
     ) => {
         const selectedProduct = getProductByCode(productCode);
         const nextUnit = toText(selectedProduct?.don_vi);
-        const nextPrice = toText(selectedProduct?.don_gia);
+        const nextPrice = formatPriceInputValue(toText(selectedProduct?.don_gia));
 
         updateLine(
             line.id,
@@ -154,13 +206,18 @@ export default function BulkOrderModal(props: BulkOrderModalProps) {
 
     const handleLineInputChange = (
         lineId: string,
-        fieldName: keyof Pick<BulkOrderLine, "don_vi" | "so_luong" | "don_gia">,
+        fieldName: keyof Pick<BulkOrderLine, "don_vi" | "so_luong" | "don_gia" | "ghi_chu">,
         event: ChangeEvent<HTMLInputElement>
     ) => {
+        const nextValue =
+            fieldName === "don_gia"
+                ? formatPriceInputValue(event.target.value)
+                : event.target.value;
+
         updateLine(
             lineId,
             {
-                [fieldName]: event.target.value
+                [fieldName]: nextValue
             }
         );
     };
@@ -218,7 +275,8 @@ export default function BulkOrderModal(props: BulkOrderModalProps) {
 
             const priceMessage = getNumberValidationMessage(
                 `Dòng ${lineNumber}: đơn giá`,
-                line.don_gia
+                line.don_gia,
+                parseFormattedNumber
             );
 
             if (priceMessage !== "") {
@@ -246,7 +304,8 @@ export default function BulkOrderModal(props: BulkOrderModalProps) {
                 ma_sp: line.ma_sp,
                 don_vi: line.don_vi.trim(),
                 so_luong: Number(line.so_luong),
-                don_gia: Number(line.don_gia)
+                don_gia: parseFormattedNumber(line.don_gia),
+                ghi_chu: line.ghi_chu.trim()
             };
         });
 
@@ -324,6 +383,8 @@ export default function BulkOrderModal(props: BulkOrderModalProps) {
                             <span>Đơn vị</span>
                             <span>Số lượng</span>
                             <span>Đơn giá</span>
+                            <span>Thành tiền</span>
+                            <span>Ghi chú</span>
                             <span />
                         </div>
 
@@ -377,9 +438,7 @@ export default function BulkOrderModal(props: BulkOrderModalProps) {
                                 <label>
                                     Đơn giá
                                     <input
-                                        type="number"
-                                        min="0"
-                                        step="any"
+                                        inputMode="numeric"
                                         value={line.don_gia}
                                         onChange={(event) => {
                                             handleLineInputChange(
@@ -388,6 +447,26 @@ export default function BulkOrderModal(props: BulkOrderModalProps) {
                                                 event
                                             );
                                         }}
+                                    />
+                                </label>
+
+                                <div className="bulk-line-amount">
+                                    <span>Thành tiền</span>
+                                    <strong>{formatMoneyText(getLineAmount(line))}</strong>
+                                </div>
+
+                                <label>
+                                    Ghi chú
+                                    <input
+                                        value={line.ghi_chu}
+                                        onChange={(event) => {
+                                            handleLineInputChange(
+                                                line.id,
+                                                "ghi_chu",
+                                                event
+                                            );
+                                        }}
+                                        placeholder="Ghi chú"
                                     />
                                 </label>
 
@@ -418,6 +497,11 @@ export default function BulkOrderModal(props: BulkOrderModalProps) {
                                 {message}
                             </p>
                         ) : null}
+
+                        <div className="bulk-total-summary">
+                            <span>Tổng tiền</span>
+                            <strong>{formatMoneyText(totalAmount)}</strong>
+                        </div>
 
                         <div className="form-actions">
                             <button

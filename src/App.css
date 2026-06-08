@@ -611,7 +611,7 @@
 }
 
 .bulk-order-dialog {
-  width: min(1120px, 100%);
+  width: min(1280px, 100%);
   max-height: calc(100svh - 48px);
   overflow: auto;
   display: grid;
@@ -690,6 +690,30 @@
   background: var(--surface);
 }
 
+.bulk-line-amount {
+  min-height: 40px;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.bulk-line-amount span,
+.bulk-total-summary span {
+  color: var(--muted-text);
+  font-size: 12px;
+}
+
+.bulk-line-amount strong,
+.bulk-total-summary strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .bulk-lines-shell {
   display: grid;
   gap: 8px;
@@ -698,7 +722,7 @@
 .bulk-lines-header,
 .bulk-line-row {
   display: grid;
-  grid-template-columns: minmax(260px, 1.4fr) 130px 120px 150px 74px;
+  grid-template-columns: minmax(230px, 1.35fr) 110px 108px 138px 140px minmax(180px, 1fr) 74px;
   gap: 10px;
   align-items: end;
 }
@@ -729,6 +753,17 @@
 
 .bulk-order-footer {
   align-items: center;
+}
+
+.bulk-total-summary {
+  display: grid;
+  gap: 2px;
+  margin-left: auto;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  text-align: right;
 }
 
 .reconciliation-form {
@@ -769,6 +804,14 @@
   display: grid;
   gap: 4px;
   text-align: center;
+}
+
+.statement-company-name {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-transform: uppercase;
 }
 
 .statement-meta {
@@ -1268,6 +1311,11 @@
 
   .bulk-lines-header {
     display: none;
+  }
+
+  .bulk-total-summary {
+    margin-left: 0;
+    text-align: left;
   }
 
   .reconciliation-dialog {

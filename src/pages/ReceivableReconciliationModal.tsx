@@ -46,6 +46,9 @@ type Statement = {
     entries: StatementEntry[];
 };
 
+const COMPANY_NAME =
+    "CÔNG TY TNHH THƯƠNG MẠI XÂY DỰNG TỔNG HỢP TIẾN PHÁT";
+
 const currencyFormatter = new Intl.NumberFormat(
     "vi-VN",
     {
@@ -420,6 +423,9 @@ export default function ReceivableReconciliationModal(
                 {statement !== null ? (
                     <section className="print-statement">
                         <div className="statement-title">
+                            <strong className="statement-company-name">
+                                {COMPANY_NAME}
+                            </strong>
                             <h2>BIÊN BẢN ĐỐI CHIẾU CÔNG NỢ</h2>
                             <p>
                                 Từ ngày {formatDate(statement.startDate)}

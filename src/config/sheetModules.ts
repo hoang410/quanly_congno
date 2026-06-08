@@ -206,7 +206,7 @@ export const sheetModuleConfigs: Record<SheetModuleId, SheetModuleConfig> = {
         entityLabel: "đơn bán",
         createButtonLabel: "Tạo đơn bán",
         searchPlaceholder: "Tìm mã KH, mã SP, tên...",
-        searchFields: ["ma_kh", "ten_kh", "ma_sp", "ten_sp", "don_vi"],
+        searchFields: ["ma_kh", "ten_kh", "ma_sp", "ten_sp", "don_vi", "ghi_chu"],
         summaryLabel: "đơn bán hoạt động",
         emptyMessage: "Chưa có đơn bán phù hợp với điều kiện tìm kiếm.",
         createHelpText: "Tên khách hàng, tên sản phẩm và thành tiền sẽ kế thừa công thức từ sheet.",
@@ -262,6 +262,13 @@ export const sheetModuleConfigs: Record<SheetModuleId, SheetModuleConfig> = {
                 required: true,
                 min: 0,
                 placeholder: "Có thể khác đơn giá đề xuất"
+            },
+            {
+                key: "ghi_chu",
+                label: "Ghi chú",
+                type: "textarea",
+                placeholder: "Ghi chú thêm cho dòng đơn bán",
+                wide: true
             }
         ],
         tableColumns: [
@@ -273,7 +280,8 @@ export const sheetModuleConfigs: Record<SheetModuleId, SheetModuleConfig> = {
             { key: "don_vi", label: "Đơn vị" },
             { key: "so_luong", label: "SL", format: "number" },
             { key: "don_gia", label: "Đơn giá", format: "currency" },
-            { key: "thanh_tien", label: "Thành tiền", format: "currency" }
+            { key: "thanh_tien", label: "Thành tiền", format: "currency" },
+            { key: "ghi_chu", label: "Ghi chú" }
         ]
     },
     returns: {
@@ -284,7 +292,7 @@ export const sheetModuleConfigs: Record<SheetModuleId, SheetModuleConfig> = {
         entityLabel: "phiếu trả hàng",
         createButtonLabel: "Tạo trả hàng",
         searchPlaceholder: "Tìm mã KH, mã SP, tên...",
-        searchFields: ["ma_kh", "ten_kh", "ma_sp", "ten_sp", "don_vi"],
+        searchFields: ["ma_kh", "ten_kh", "ma_sp", "ten_sp", "don_vi", "ghi_chu"],
         summaryLabel: "phiếu trả hàng hoạt động",
         emptyMessage: "Chưa có phiếu trả hàng phù hợp với điều kiện tìm kiếm.",
         createHelpText: "Tên khách hàng, tên sản phẩm và thành tiền sẽ kế thừa công thức từ sheet.",
@@ -340,6 +348,13 @@ export const sheetModuleConfigs: Record<SheetModuleId, SheetModuleConfig> = {
                 required: true,
                 min: 0,
                 placeholder: "Ví dụ: 100000"
+            },
+            {
+                key: "ghi_chu",
+                label: "Ghi chú",
+                type: "textarea",
+                placeholder: "Ghi chú thêm cho dòng trả hàng",
+                wide: true
             }
         ],
         tableColumns: [
@@ -351,7 +366,8 @@ export const sheetModuleConfigs: Record<SheetModuleId, SheetModuleConfig> = {
             { key: "don_vi", label: "Đơn vị" },
             { key: "so_luong", label: "SL trả", format: "number" },
             { key: "don_gia", label: "Đơn giá", format: "currency" },
-            { key: "thanh_tien", label: "Thành tiền", format: "currency" }
+            { key: "thanh_tien", label: "Thành tiền", format: "currency" },
+            { key: "ghi_chu", label: "Ghi chú" }
         ]
     },
     payments: {
@@ -362,7 +378,7 @@ export const sheetModuleConfigs: Record<SheetModuleId, SheetModuleConfig> = {
         entityLabel: "thanh toán",
         createButtonLabel: "Tạo thanh toán",
         searchPlaceholder: "Tìm mã KH, tên khách hàng...",
-        searchFields: ["ma_kh", "ten_kh", "ngay_thanh_toan"],
+        searchFields: ["ma_kh", "ten_kh", "ngay_thanh_toan", "ghi_chu"],
         summaryLabel: "thanh toán hoạt động",
         emptyMessage: "Chưa có thanh toán phù hợp với điều kiện tìm kiếm.",
         createHelpText: "Tên khách hàng sẽ được lấy bằng công thức từ sheet.",
@@ -395,13 +411,21 @@ export const sheetModuleConfigs: Record<SheetModuleId, SheetModuleConfig> = {
                 required: true,
                 min: 0,
                 placeholder: "Ví dụ: 500000"
+            },
+            {
+                key: "ghi_chu",
+                label: "Ghi chú",
+                type: "textarea",
+                placeholder: "Ghi chú thêm cho khoản thanh toán",
+                wide: true
             }
         ],
         tableColumns: [
             { key: "ngay_thanh_toan", label: "Ngày TT", format: "date" },
             { key: "ma_kh", label: "Mã KH" },
             { key: "ten_kh", label: "Khách hàng", primary: true },
-            { key: "so_tien", label: "Số tiền", format: "currency" }
+            { key: "so_tien", label: "Số tiền", format: "currency" },
+            { key: "ghi_chu", label: "Ghi chú" }
         ]
     },
     dailyChanges: {
