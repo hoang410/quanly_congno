@@ -7,6 +7,7 @@ import {
 } from "../config/appNavigation";
 import { sheetModuleConfigs } from "../config/sheetModules";
 import { useAuth } from "../context/useAuth";
+import DashboardPage from "../pages/DashboardPage";
 import SheetModulePage from "../pages/SheetModulePage";
 
 type NavigationGroup = {
@@ -39,6 +40,10 @@ const groupNavigationItems = (
 };
 
 const renderModulePage = (activeModuleId: AppModuleId) => {
+    if (activeModuleId === "dashboard") {
+        return <DashboardPage />;
+    }
+
     const config = sheetModuleConfigs[activeModuleId];
 
     return (
@@ -51,7 +56,7 @@ const renderModulePage = (activeModuleId: AppModuleId) => {
 
 export default function ModelDrivenApp() {
     const [activeModuleId, setActiveModuleId] =
-        useState<AppModuleId>("products");
+        useState<AppModuleId>("dashboard");
 
     const { user, setUser } = useAuth();
 

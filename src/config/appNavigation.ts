@@ -1,4 +1,5 @@
 export type AppModuleId =
+    | "dashboard"
     | "products"
     | "customers"
     | "salesOrders"
@@ -15,6 +16,13 @@ export type AppNavigationItem = {
 }
 
 export const appNavigationItems: AppNavigationItem[] = [
+    {
+        id: "dashboard",
+        label: "Dashboard",
+        group: "Tổng quan",
+        description: "Theo dõi nhanh công nợ, doanh số và phát sinh trong kỳ",
+        isReady: true
+    },
     {
         id: "products",
         label: "Sản phẩm",

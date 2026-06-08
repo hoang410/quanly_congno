@@ -1,5 +1,7 @@
 import type { AppModuleId } from "./appNavigation";
 
+export type SheetModuleId = Exclude<AppModuleId, "dashboard">;
+
 export type SheetRecordValue =
     | string
     | number
@@ -48,7 +50,7 @@ export type SheetTableColumn = {
 };
 
 export type SheetModuleConfig = {
-    id: AppModuleId;
+    id: SheetModuleId;
     sheetName: string;
     title: string;
     description: string;
@@ -80,7 +82,7 @@ const valueText = (
     return String(value);
 };
 
-export const sheetModuleConfigs: Record<AppModuleId, SheetModuleConfig> = {
+export const sheetModuleConfigs: Record<SheetModuleId, SheetModuleConfig> = {
     products: {
         id: "products",
         sheetName: "San_pham",
