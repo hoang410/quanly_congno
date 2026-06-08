@@ -26,6 +26,7 @@ type TimelineEntry = {
     dateLabel: string;
     type: string;
     description: string;
+    note: string;
     increase: number;
     decrease: number;
 };
@@ -131,7 +132,8 @@ const buildSaleEntry = (record: SheetRecord): TimelineEntry => {
         dateKey,
         dateLabel: formatDate(dateKey),
         type: "Đơn bán",
-        description: `Bán ${productName} - SL ${quantity} ${unit}`.trim(),
+        description: `${productName} - SL ${quantity} ${unit}`.trim(),
+        note: toText(record.ghi_chu),
         increase: amount,
         decrease: 0
     };
@@ -148,7 +150,8 @@ const buildReturnEntry = (record: SheetRecord): TimelineEntry => {
         dateKey,
         dateLabel: formatDate(dateKey),
         type: "Trả hàng",
-        description: `Trả ${productName} - SL ${quantity} ${unit}`.trim(),
+        description: `${productName} - SL ${quantity} ${unit}`.trim(),
+        note: toText(record.ghi_chu),
         increase: 0,
         decrease: amount
     };
@@ -162,7 +165,8 @@ const buildPaymentEntry = (record: SheetRecord): TimelineEntry => {
         dateKey,
         dateLabel: formatDate(dateKey),
         type: "Thanh toán",
-        description: "Khách hàng thanh toán",
+        description: "Khách hàng trả tiền",
+        note: toText(record.ghi_chu),
         increase: 0,
         decrease: amount
     };
@@ -459,6 +463,7 @@ export default function ReceivableReconciliationModal(
                                     <col className="statement-col-date" />
                                     <col className="statement-col-type" />
                                     <col className="statement-col-description" />
+                                    <col className="statement-col-note" />
                                     <col className="statement-col-money" />
                                     <col className="statement-col-money" />
                                     <col className="statement-col-balance" />
@@ -468,6 +473,7 @@ export default function ReceivableReconciliationModal(
                                         <th>Ngày</th>
                                         <th>Nội dung</th>
                                         <th>Diễn giải</th>
+                                        <th>Ghi chú</th>
                                         <th>Phát sinh tăng</th>
                                         <th>Phát sinh giảm</th>
                                         <th>Số dư</th>
@@ -480,12 +486,13 @@ export default function ReceivableReconciliationModal(
                                         <td>Nợ đầu kỳ nhập tay</td>
                                         <td />
                                         <td />
+                                        <td />
                                         <td>{formatCurrency(statement.openingDebt)}</td>
                                     </tr>
 
                                     {statement.entries.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6}>Không có phát sinh trong kỳ.</td>
+                                            <td colSpan={7}>Không có phát sinh trong kỳ.</td>
                                         </tr>
                                     ) : null}
 
@@ -494,6 +501,7 @@ export default function ReceivableReconciliationModal(
                                             <td>{entry.dateLabel}</td>
                                             <td>{entry.type}</td>
                                             <td>{entry.description}</td>
+                                            <td>{entry.note}</td>
                                             <td>
                                                 {entry.increase > 0
                                                     ? formatCurrency(entry.increase)
@@ -510,7 +518,7 @@ export default function ReceivableReconciliationModal(
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <td colSpan={3}>Tổng phát sinh trong kỳ</td>
+                                        <td colSpan={4}>Tổng phát sinh trong kỳ</td>
                                         <td>{formatCurrency(statement.totalIncrease)}</td>
                                         <td>{formatCurrency(statement.totalDecrease)}</td>
                                         <td>{formatCurrency(statement.endingDebt)}</td>

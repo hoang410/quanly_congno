@@ -847,7 +847,7 @@
 
 .statement-table {
   width: 100%;
-  min-width: 980px;
+  min-width: 1120px;
   border-collapse: collapse;
   table-layout: fixed;
 }
@@ -862,6 +862,10 @@
 
 .statement-col-description {
   width: auto;
+}
+
+.statement-col-note {
+  width: 160px;
 }
 
 .statement-col-money {
@@ -900,26 +904,28 @@
 }
 
 .statement-table th:nth-child(3),
-.statement-table td:nth-child(3) {
+.statement-table th:nth-child(4),
+.statement-table td:nth-child(3),
+.statement-table td:nth-child(4) {
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
-.statement-table td:nth-child(4),
 .statement-table td:nth-child(5),
 .statement-table td:nth-child(6),
-.statement-table th:nth-child(4),
+.statement-table td:nth-child(7),
 .statement-table th:nth-child(5),
-.statement-table th:nth-child(6) {
+.statement-table th:nth-child(6),
+.statement-table th:nth-child(7) {
   text-align: right;
 }
 
-.statement-table td:nth-child(4),
 .statement-table td:nth-child(5),
 .statement-table td:nth-child(6),
-.statement-table tfoot td:nth-child(4),
+.statement-table td:nth-child(7),
 .statement-table tfoot td:nth-child(5),
-.statement-table tfoot td:nth-child(6) {
+.statement-table tfoot td:nth-child(6),
+.statement-table tfoot td:nth-child(7) {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
