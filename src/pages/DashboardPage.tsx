@@ -66,14 +66,6 @@ type TrendRow = {
     decrease: number;
 };
 
-type ActivityRow = {
-    dateKey: string;
-    type: string;
-    title: string;
-    amount: number;
-    tone: "increase" | "decrease";
-};
-
 const emptyDashboardData: DashboardData = {
     products: [],
     customers: [],
@@ -333,55 +325,6 @@ const buildTrendRows = (
         .slice(-10);
 };
 
-const buildRecentActivities = (
-    salesOrders: SheetRecord[],
-    returns: SheetRecord[],
-    payments: SheetRecord[]
-) => {
-    const saleActivities = salesOrders.map((record): ActivityRow => {
-        return {
-            dateKey: normalizeDateKey(record.ngay_tao),
-            type: "Đơn bán",
-            title: `${getRecordCustomerName(record)} - ${toText(record.ten_sp) || toText(record.ma_sp)}`.trim(),
-            amount: getLineAmount(record),
-            tone: "increase"
-        };
-    });
-
-    const returnActivities = returns.map((record): ActivityRow => {
-        return {
-            dateKey: normalizeDateKey(record.ngay_tao),
-            type: "Trả hàng",
-            title: `${getRecordCustomerName(record)} - ${toText(record.ten_sp) || toText(record.ma_sp)}`.trim(),
-            amount: getLineAmount(record),
-            tone: "decrease"
-        };
-    });
-
-    const paymentActivities = payments.map((record): ActivityRow => {
-        return {
-            dateKey: normalizeDateKey(record.ngay_thanh_toan),
-            type: "Thanh toán",
-            title: getRecordCustomerName(record),
-            amount: parseNumber(record.so_tien),
-            tone: "decrease"
-        };
-    });
-
-    return [
-        ...saleActivities,
-        ...returnActivities,
-        ...paymentActivities
-    ]
-        .filter((activity) => {
-            return activity.dateKey !== "";
-        })
-        .sort((firstActivity, secondActivity) => {
-            return secondActivity.dateKey.localeCompare(firstActivity.dateKey);
-        })
-        .slice(0, 8);
-};
-
 const fetchDashboardData = async (): Promise<DashboardData> => {
     const [
         products,
@@ -629,11 +572,6 @@ export default function DashboardPage() {
             topSalesCustomers: buildTopSalesCustomers(periodSalesOrders),
             topProducts: buildTopProducts(periodSalesOrders),
             trendRows,
-            recentActivities: buildRecentActivities(
-                periodSalesOrders,
-                periodReturns,
-                periodPayments
-            ),
             recentDailyChanges
         };
     }, [dashboardData, endDate, startDate]);
@@ -905,32 +843,6 @@ export default function DashboardPage() {
                             )}
                         </DashboardPanel>
 
-                        <DashboardPanel
-                            title="Hoạt động gần đây"
-                            description="Đơn bán, trả hàng và thanh toán mới nhất trong kỳ."
-                        >
-                            {dashboardSummary.recentActivities.length === 0 ? (
-                                <p className="dashboard-empty">Chưa có hoạt động trong kỳ.</p>
-                            ) : (
-                                <div className="activity-list">
-                                    {dashboardSummary.recentActivities.map((activity, index) => (
-                                        <div
-                                            className={`activity-row ${activity.tone}`}
-                                            key={`${activity.dateKey}-${activity.type}-${index}`}
-                                        >
-                                            <div>
-                                                <strong>{activity.type}</strong>
-                                                <span>{activity.title}</span>
-                                            </div>
-                                            <div>
-                                                <strong>{formatCurrency(activity.amount)}</strong>
-                                                <span>{formatDateKeyForDisplay(activity.dateKey)}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </DashboardPanel>
                     </div>
                 </>
             ) : null}

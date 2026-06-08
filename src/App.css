@@ -986,7 +986,6 @@
 
 .dashboard-kpi-card span,
 .rank-row small,
-.activity-row span,
 .mini-table-row span {
   color: var(--muted-text);
   font-size: 12px;
@@ -1129,15 +1128,13 @@
 }
 
 .dashboard-mini-table,
-.rank-list,
-.activity-list {
+.rank-list {
   display: grid;
   gap: 8px;
 }
 
 .mini-table-row,
-.rank-row,
-.activity-row {
+.rank-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1149,21 +1146,18 @@
 }
 
 .mini-table-row > div,
-.rank-row > div,
-.activity-row > div {
+.rank-row > div {
   min-width: 0;
   display: grid;
   gap: 2px;
 }
 
 .mini-table-row strong,
-.rank-row strong,
-.activity-row strong {
+.rank-row strong {
   color: var(--text);
 }
 
-.mini-table-row > div:last-child,
-.activity-row > div:last-child {
+.mini-table-row > div:last-child {
   justify-items: end;
   text-align: right;
   white-space: nowrap;
@@ -1184,14 +1178,6 @@
 
 .rank-row > strong {
   white-space: nowrap;
-}
-
-.activity-row.increase {
-  border-left: 4px solid var(--success);
-}
-
-.activity-row.decrease {
-  border-left: 4px solid var(--danger);
 }
 
 @media (max-width: 860px) {
@@ -1310,14 +1296,12 @@
 
   .dashboard-period-note,
   .mini-table-row,
-  .rank-row,
-  .activity-row {
+  .rank-row {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .mini-table-row > div:last-child,
-  .activity-row > div:last-child {
+  .mini-table-row > div:last-child {
     justify-items: start;
     text-align: left;
   }
