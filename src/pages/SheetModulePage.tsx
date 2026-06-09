@@ -54,8 +54,8 @@ type LookupRecordsBySource = Partial<Record<SheetLookupSource, SheetRecord[]>>;
 
 type ChotCongNoResult = {
     created?: unknown[];
+    updated?: unknown[];
     skipped?: unknown[];
-    ngay_phat_sinh?: string;
 };
 
 type SheetModulePageProps = {
@@ -309,7 +309,6 @@ export default function SheetModulePage(props: SheetModulePageProps) {
     const [isBulkOrderOpen, setIsBulkOrderOpen] = useState<boolean>(false);
     const [reconciliationCustomer, setReconciliationCustomer] =
         useState<SheetRecord | null>(null);
-    const [closingDate, setClosingDate] = useState<string>(getTodayInputValue);
     const [lookupRecords, setLookupRecords] =
         useState<LookupRecordsBySource>({});
 
@@ -635,36 +634,22 @@ export default function SheetModulePage(props: SheetModulePageProps) {
         setReconciliationCustomer(null);
     };
 
-    const handleClosingDateChange = (
-        event: ChangeEvent<HTMLInputElement>
-    ) => {
-        setClosingDate(event.target.value);
-    };
-
     const handleChotCongNo = async () => {
-        if (closingDate.trim() === "") {
-            setActionMessage("Vui lòng chọn ngày chốt công nợ");
-            return;
-        }
-
         try {
             setMutationStatus("runningAction");
             setActionMessage("");
 
             const result = await runSheetAction<ChotCongNoResult>(
-                "chotCongNo",
-                {
-                    ngay_chot: closingDate
-                }
+                "chotCongNo"
             );
 
             const createdCount = result.created?.length ?? 0;
+            const updatedCount = result.updated?.length ?? 0;
             const skippedCount = result.skipped?.length ?? 0;
-            const resultDate = result.ngay_phat_sinh ?? closingDate;
 
             setActionMessage(
                 result.message
-                    ?? `Đã chốt ${resultDate}: tạo ${createdCount}, bỏ qua ${skippedCount}.`
+                    ?? `Đã chốt toàn bộ công nợ: tạo ${createdCount}, cập nhật ${updatedCount}, bỏ qua ${skippedCount}.`
             );
 
             await loadRecords();
@@ -788,16 +773,6 @@ export default function SheetModulePage(props: SheetModulePageProps) {
 
             {config.supportsChotCongNo === true ? (
                 <div className="closing-bar">
-                    <label>
-                        Ngày chốt
-                        <input
-                            className="date-input"
-                            type="date"
-                            value={closingDate}
-                            onChange={handleClosingDateChange}
-                        />
-                    </label>
-
                     <button
                         className="plain-button"
                         type="button"
