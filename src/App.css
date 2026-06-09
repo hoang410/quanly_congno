@@ -1402,6 +1402,7 @@
   }
 
   .print-statement {
+    display: block;
     padding: 0;
     border: 0;
     border-radius: 0;
@@ -1409,9 +1410,43 @@
 
   .statement-table-shell {
     overflow: visible;
+    border-radius: 0;
   }
 
   .statement-table {
     min-width: 0;
+  }
+
+  .statement-table thead {
+    display: table-header-group;
+  }
+
+  .statement-table tfoot {
+    display: table-row-group;
+  }
+
+  .statement-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .statement-title,
+  .statement-meta,
+  .statement-table-shell {
+    margin-bottom: 14px;
+  }
+
+  .statement-signatures {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+    margin-top: 28px;
+    padding-top: 0;
+  }
+
+  .statement-signatures > div {
+    min-height: 84px;
   }
 }
