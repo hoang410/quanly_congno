@@ -552,12 +552,14 @@ export default function ReceivableReconciliationModal(
                                 <strong>{statement.customerName}</strong>
                             </div>
                             <div>
-                                <span>Mã khách hàng</span>
-                                <strong>{statement.customerCode}</strong>
-                            </div>
-                            <div>
                                 <span>Nợ đầu kỳ</span>
                                 <strong>{formatCurrency(statement.openingDebt)}</strong>
+                            </div>
+                            <div>
+                                <span>Phát sinh trong kỳ</span>
+                                <strong>
+                                    {formatCurrency(statement.totalIncrease - statement.totalDecrease)}
+                                </strong>
                             </div>
                             <div>
                                 <span>Nợ cuối kỳ</span>

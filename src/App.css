@@ -876,7 +876,7 @@
 }
 
 .statement-table th {
-  color: var(--muted-text);
+  color: #000000;
   background: var(--surface-soft);
   font-size: 12px;
   text-transform: uppercase;
@@ -1356,8 +1356,14 @@
 }
 
 @media print {
+  html,
   body {
-    background: #ffffff;
+    background: #ffffff !important;
+  }
+
+  #root {
+    min-height: auto;
+    background: #ffffff !important;
   }
 
   .no-print,
@@ -1378,12 +1384,13 @@
     display: block;
     min-height: auto;
     padding: 0;
-    background: #ffffff;
+    background: #ffffff !important;
   }
 
   .reconciliation-backdrop {
     position: static;
     overflow: visible;
+    background: #ffffff !important;
   }
 
   .reconciliation-dialog {
@@ -1393,6 +1400,7 @@
     padding: 0;
     border-radius: 0;
     box-shadow: none;
+    background: #ffffff !important;
   }
 
   .print-statement {
@@ -1400,6 +1408,7 @@
     padding: 0;
     border: 0;
     border-radius: 0;
+    background: #ffffff !important;
   }
 
   .statement-table-shell {
