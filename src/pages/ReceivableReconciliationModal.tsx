@@ -26,6 +26,8 @@ type TimelineEntry = {
     dateLabel: string;
     type: string;
     description: string;
+    quantity: string;
+    unitPrice: number | null;
     note: string;
     increase: number;
     decrease: number;
@@ -46,6 +48,20 @@ type Statement = {
     endingDebt: number;
     entries: StatementEntry[];
 };
+
+type StatementTableRow =
+    | {
+        kind: "entry";
+        entry: StatementEntry;
+    }
+    | {
+        kind: "dailyTotal";
+        dateKey: string;
+        dateLabel: string;
+        totalIncrease: number;
+        totalDecrease: number;
+        balance: number;
+    };
 
 const COMPANY_NAME =
     "CÔNG TY TNHH THƯƠNG MẠI XÂY DỰNG TỔNG HỢP TIẾN PHÁT";
@@ -102,6 +118,40 @@ const formatCurrency = (value: number) => {
     return currencyFormatter.format(value);
 };
 
+const formatOptionalCurrency = (value: number | null) => {
+    return value === null ? "" : formatCurrency(value);
+};
+
+const formatQuantity = (
+    quantity: SheetRecordValue,
+    unit: SheetRecordValue
+) => {
+    const quantityText = toText(quantity).trim();
+    const unitText = toText(unit).trim();
+
+    if (quantityText === "") {
+        return unitText;
+    }
+
+    const numericQuantity = Number(quantityText);
+    const formattedQuantity = Number.isNaN(numericQuantity)
+        ? quantityText
+        : numberFormatter.format(numericQuantity);
+
+    return [
+        formattedQuantity,
+        unitText
+    ]
+        .filter((part) => {
+            return part !== "";
+        })
+        .join(" ");
+};
+
+const parseOptionalNumber = (value: SheetRecordValue) => {
+    return toText(value).trim() === "" ? null : parseNumber(value);
+};
+
 const isInDateRange = (
     dateKey: string,
     startDate: string,
@@ -132,7 +182,9 @@ const buildSaleEntry = (record: SheetRecord): TimelineEntry => {
         dateKey,
         dateLabel: formatDate(dateKey),
         type: "Đơn bán",
-        description: `${productName} - SL ${quantity} ${unit}`.trim(),
+        description: productName,
+        quantity: formatQuantity(quantity, unit),
+        unitPrice: parseOptionalNumber(record.don_gia),
         note: toText(record.ghi_chu),
         increase: amount,
         decrease: 0
@@ -150,7 +202,9 @@ const buildReturnEntry = (record: SheetRecord): TimelineEntry => {
         dateKey,
         dateLabel: formatDate(dateKey),
         type: "Trả hàng",
-        description: `${productName} - SL ${quantity} ${unit}`.trim(),
+        description: productName,
+        quantity: formatQuantity(quantity, unit),
+        unitPrice: parseOptionalNumber(record.don_gia),
         note: toText(record.ghi_chu),
         increase: 0,
         decrease: amount
@@ -166,10 +220,61 @@ const buildPaymentEntry = (record: SheetRecord): TimelineEntry => {
         dateLabel: formatDate(dateKey),
         type: "Thanh toán",
         description: "Khách hàng trả tiền",
+        quantity: "",
+        unitPrice: null,
         note: toText(record.ghi_chu),
         increase: 0,
         decrease: amount
     };
+};
+
+const buildStatementTableRows = (
+    entries: StatementEntry[]
+): StatementTableRow[] => {
+    const rows: StatementTableRow[] = [];
+    let currentDateKey = "";
+    let currentDateLabel = "";
+    let dailyIncrease = 0;
+    let dailyDecrease = 0;
+    let dailyBalance = 0;
+
+    const pushDailyTotal = () => {
+        if (currentDateKey === "") {
+            return;
+        }
+
+        rows.push({
+            kind: "dailyTotal",
+            dateKey: currentDateKey,
+            dateLabel: currentDateLabel,
+            totalIncrease: dailyIncrease,
+            totalDecrease: dailyDecrease,
+            balance: dailyBalance
+        });
+    };
+
+    entries.forEach((entry) => {
+        if (entry.dateKey !== currentDateKey) {
+            pushDailyTotal();
+            currentDateKey = entry.dateKey;
+            currentDateLabel = entry.dateLabel;
+            dailyIncrease = 0;
+            dailyDecrease = 0;
+        }
+
+        rows.push({
+            kind: "entry",
+            entry
+        });
+
+        dailyIncrease += entry.increase;
+        dailyDecrease += entry.decrease;
+        dailyBalance = entry.balance;
+    });
+
+    pushDailyTotal();
+
+    return rows;
 };
 
 export default function ReceivableReconciliationModal(
@@ -349,6 +454,9 @@ export default function ReceivableReconciliationModal(
         window.print();
     };
 
+    const statementRows =
+        statement === null ? [] : buildStatementTableRows(statement.entries);
+
     return (
         <div className="confirm-backdrop reconciliation-backdrop" role="presentation">
             <section
@@ -463,6 +571,8 @@ export default function ReceivableReconciliationModal(
                                     <col className="statement-col-date" />
                                     <col className="statement-col-type" />
                                     <col className="statement-col-description" />
+                                    <col className="statement-col-quantity" />
+                                    <col className="statement-col-unit-price" />
                                     <col className="statement-col-note" />
                                     <col className="statement-col-money" />
                                     <col className="statement-col-money" />
@@ -470,58 +580,101 @@ export default function ReceivableReconciliationModal(
                                 </colgroup>
                                 <thead>
                                     <tr>
-                                        <th>Ngày</th>
-                                        <th>Nội dung</th>
-                                        <th>Diễn giải</th>
-                                        <th>Ghi chú</th>
-                                        <th>Phát sinh tăng</th>
-                                        <th>Phát sinh giảm</th>
-                                        <th>Số dư</th>
+                                        <th className="statement-cell-date">Ngày</th>
+                                        <th className="statement-cell-type">Nội dung</th>
+                                        <th className="statement-cell-description">Diễn giải</th>
+                                        <th className="statement-cell-quantity">Số lượng</th>
+                                        <th className="statement-cell-unit-price">Đơn giá</th>
+                                        <th className="statement-cell-note">Ghi chú</th>
+                                        <th className="statement-cell-money">Phát sinh tăng</th>
+                                        <th className="statement-cell-money">Phát sinh giảm</th>
+                                        <th className="statement-cell-balance">Số dư</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>{formatDate(statement.startDate)}</td>
-                                        <td>Số dư đầu kỳ</td>
-                                        <td>Nợ đầu kỳ nhập tay</td>
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td>{formatCurrency(statement.openingDebt)}</td>
+                                        <td className="statement-cell-date">{formatDate(statement.startDate)}</td>
+                                        <td className="statement-cell-type">Số dư đầu kỳ</td>
+                                        <td className="statement-cell-description">Nợ đầu kỳ</td>
+                                        <td className="statement-cell-quantity" />
+                                        <td className="statement-cell-unit-price" />
+                                        <td className="statement-cell-note" />
+                                        <td className="statement-cell-money" />
+                                        <td className="statement-cell-money" />
+                                        <td className="statement-cell-balance">{formatCurrency(statement.openingDebt)}</td>
                                     </tr>
 
                                     {statement.entries.length === 0 ? (
                                         <tr>
-                                            <td colSpan={7}>Không có phát sinh trong kỳ.</td>
+                                            <td colSpan={9}>Không có phát sinh trong kỳ.</td>
                                         </tr>
                                     ) : null}
 
-                                    {statement.entries.map((entry, index) => (
-                                        <tr key={`${entry.dateKey}-${entry.type}-${index}`}>
-                                            <td>{entry.dateLabel}</td>
-                                            <td>{entry.type}</td>
-                                            <td>{entry.description}</td>
-                                            <td>{entry.note}</td>
-                                            <td>
-                                                {entry.increase > 0
-                                                    ? formatCurrency(entry.increase)
-                                                    : ""}
-                                            </td>
-                                            <td>
-                                                {entry.decrease > 0
-                                                    ? formatCurrency(entry.decrease)
-                                                    : ""}
-                                            </td>
-                                            <td>{formatCurrency(entry.balance)}</td>
-                                        </tr>
-                                    ))}
+                                    {statementRows.map((row, index) => {
+                                        if (row.kind === "dailyTotal") {
+                                            return (
+                                                <tr
+                                                    className="statement-day-total-row"
+                                                    key={`total-${row.dateKey}-${index}`}
+                                                >
+                                                    <td className="statement-cell-date">{row.dateLabel}</td>
+                                                    <td
+                                                        className="statement-day-total-label"
+                                                        colSpan={5}
+                                                    >
+                                                        Tổng cộng ngày
+                                                    </td>
+                                                    <td className="statement-cell-money">
+                                                        {formatCurrency(row.totalIncrease)}
+                                                    </td>
+                                                    <td className="statement-cell-money">
+                                                        {formatCurrency(row.totalDecrease)}
+                                                    </td>
+                                                    <td className="statement-cell-balance">
+                                                        {formatCurrency(row.balance)}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }
+
+                                        const { entry } = row;
+
+                                        return (
+                                            <tr key={`${entry.dateKey}-${entry.type}-${index}`}>
+                                                <td className="statement-cell-date">{entry.dateLabel}</td>
+                                                <td className="statement-cell-type">{entry.type}</td>
+                                                <td className="statement-cell-description">{entry.description}</td>
+                                                <td className="statement-cell-quantity">{entry.quantity}</td>
+                                                <td className="statement-cell-unit-price">
+                                                    {formatOptionalCurrency(entry.unitPrice)}
+                                                </td>
+                                                <td className="statement-cell-note">{entry.note}</td>
+                                                <td className="statement-cell-money">
+                                                    {entry.increase > 0
+                                                        ? formatCurrency(entry.increase)
+                                                        : ""}
+                                                </td>
+                                                <td className="statement-cell-money">
+                                                    {entry.decrease > 0
+                                                        ? formatCurrency(entry.decrease)
+                                                        : ""}
+                                                </td>
+                                                <td className="statement-cell-balance">{formatCurrency(entry.balance)}</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <td colSpan={4}>Tổng phát sinh trong kỳ</td>
-                                        <td>{formatCurrency(statement.totalIncrease)}</td>
-                                        <td>{formatCurrency(statement.totalDecrease)}</td>
-                                        <td>{formatCurrency(statement.endingDebt)}</td>
+                                        <td
+                                            className="statement-period-total-label"
+                                            colSpan={6}
+                                        >
+                                            Tổng phát sinh trong kỳ
+                                        </td>
+                                        <td className="statement-cell-money">{formatCurrency(statement.totalIncrease)}</td>
+                                        <td className="statement-cell-money">{formatCurrency(statement.totalDecrease)}</td>
+                                        <td className="statement-cell-balance">{formatCurrency(statement.endingDebt)}</td>
                                     </tr>
                                 </tfoot>
                             </table>

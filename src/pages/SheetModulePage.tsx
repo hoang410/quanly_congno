@@ -724,6 +724,13 @@ export default function SheetModulePage(props: SheetModulePageProps) {
     const isDeleting = mutationStatus === "deleting";
     const isRunningAction = mutationStatus === "runningAction";
     const isFormOpen = formMode !== null;
+    const canCreate = config.canCreate !== false;
+    const canEdit = config.canEdit !== false;
+    const canDelete = config.canDelete !== false;
+    const hasRowActions =
+        config.supportsDebtReconciliation === true
+        || canEdit
+        || canDelete;
 
     return (
         <section className="entity-page">
@@ -734,13 +741,15 @@ export default function SheetModulePage(props: SheetModulePageProps) {
                 </div>
 
                 <div className="entity-actions">
-                    <button
-                        className="command-button"
-                        type="button"
-                        onClick={openCreateForm}
-                    >
-                        {config.createButtonLabel}
-                    </button>
+                    {canCreate ? (
+                        <button
+                            className="command-button"
+                            type="button"
+                            onClick={openCreateForm}
+                        >
+                            {config.createButtonLabel}
+                        </button>
+                    ) : null}
 
                     {supportsBulkOrder ? (
                         <button
@@ -896,7 +905,9 @@ export default function SheetModulePage(props: SheetModulePageProps) {
                                 {config.tableColumns.map((column) => (
                                     <th key={column.key}>{column.label}</th>
                                 ))}
-                                <th>Thao tác</th>
+                                {hasRowActions ? (
+                                    <th>Thao tác</th>
+                                ) : null}
                             </tr>
                         </thead>
                         <tbody>
@@ -918,35 +929,41 @@ export default function SheetModulePage(props: SheetModulePageProps) {
                                             </td>
                                         );
                                     })}
-                                    <td>
-                                        <div className="row-actions">
-                                            {config.supportsDebtReconciliation === true ? (
-                                                <button
-                                                    className="table-action-button"
-                                                    type="button"
-                                                    onClick={() => openDebtReconciliation(record)}
-                                                >
-                                                    Đối chiếu công nợ
-                                                </button>
-                                            ) : null}
+                                    {hasRowActions ? (
+                                        <td>
+                                            <div className="row-actions">
+                                                {config.supportsDebtReconciliation === true ? (
+                                                    <button
+                                                        className="table-action-button"
+                                                        type="button"
+                                                        onClick={() => openDebtReconciliation(record)}
+                                                    >
+                                                        Đối chiếu công nợ
+                                                    </button>
+                                                ) : null}
 
-                                            <button
-                                                className="table-action-button"
-                                                type="button"
-                                                onClick={() => openEditForm(record)}
-                                            >
-                                                Sửa
-                                            </button>
+                                                {canEdit ? (
+                                                    <button
+                                                        className="table-action-button"
+                                                        type="button"
+                                                        onClick={() => openEditForm(record)}
+                                                    >
+                                                        Sửa
+                                                    </button>
+                                                ) : null}
 
-                                            <button
-                                                className="table-action-button danger"
-                                                type="button"
-                                                onClick={() => openDeleteConfirm(record)}
-                                            >
-                                                Xoá
-                                            </button>
-                                        </div>
-                                    </td>
+                                                {canDelete ? (
+                                                    <button
+                                                        className="table-action-button danger"
+                                                        type="button"
+                                                        onClick={() => openDeleteConfirm(record)}
+                                                    >
+                                                        Xoá
+                                                    </button>
+                                                ) : null}
+                                            </div>
+                                        </td>
+                                    ) : null}
                                 </tr>
                             ))}
                         </tbody>

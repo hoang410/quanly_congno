@@ -67,6 +67,9 @@ export type SheetModuleConfig = {
     getRecordTitle: (record: SheetRecord) => string;
     supportsChotCongNo?: boolean;
     supportsDebtReconciliation?: boolean;
+    canCreate?: boolean;
+    canEdit?: boolean;
+    canDelete?: boolean;
 };
 
 const valueText = (
@@ -447,6 +450,9 @@ export const sheetModuleConfigs: Record<SheetModuleId, SheetModuleConfig> = {
             return `${valueText(record, "ngay_phat_sinh")} ${valueText(record, "ma_kh")}`.trim();
         },
         supportsChotCongNo: true,
+        canCreate: false,
+        canEdit: false,
+        canDelete: false,
         formFields: [
             {
                 key: "ngay_phat_sinh",

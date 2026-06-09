@@ -830,38 +830,46 @@
 
 .statement-table {
   width: 100%;
-  min-width: 1120px;
+  min-width: 980px;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
 .statement-col-date {
-  width: 118px;
+  width: 86px;
 }
 
 .statement-col-type {
-  width: 128px;
+  width: 92px;
 }
 
 .statement-col-description {
   width: auto;
 }
 
+.statement-col-quantity {
+  width: 78px;
+}
+
+.statement-col-unit-price {
+  width: 104px;
+}
+
 .statement-col-note {
-  width: 160px;
+  width: 110px;
 }
 
 .statement-col-money {
-  width: 136px;
+  width: 112px;
 }
 
 .statement-col-balance {
-  width: 124px;
+  width: 108px;
 }
 
 .statement-table th,
 .statement-table td {
-  padding: 10px 12px;
+  padding: 8px 8px;
   border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: top;
@@ -876,41 +884,44 @@
 
 .statement-table td {
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
 }
 
-.statement-table th:nth-child(1),
-.statement-table th:nth-child(2),
-.statement-table td:nth-child(1),
-.statement-table td:nth-child(2) {
+.statement-cell-date,
+.statement-cell-type {
   white-space: nowrap;
 }
 
-.statement-table th:nth-child(3),
-.statement-table th:nth-child(4),
-.statement-table td:nth-child(3),
-.statement-table td:nth-child(4) {
+.statement-cell-description,
+.statement-cell-note {
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
-.statement-table td:nth-child(5),
-.statement-table td:nth-child(6),
-.statement-table td:nth-child(7),
-.statement-table th:nth-child(5),
-.statement-table th:nth-child(6),
-.statement-table th:nth-child(7) {
+.statement-cell-quantity,
+.statement-cell-unit-price,
+.statement-cell-money,
+.statement-cell-balance {
   text-align: right;
 }
 
-.statement-table td:nth-child(5),
-.statement-table td:nth-child(6),
-.statement-table td:nth-child(7),
-.statement-table tfoot td:nth-child(5),
-.statement-table tfoot td:nth-child(6),
-.statement-table tfoot td:nth-child(7) {
+.statement-cell-quantity,
+.statement-cell-unit-price,
+.statement-cell-money,
+.statement-cell-balance {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.statement-day-total-row td {
+  font-weight: 700;
+  background: var(--surface-soft);
+}
+
+.statement-day-total-label,
+.statement-period-total-label {
+  color: var(--text);
+  font-weight: 700;
 }
 
 .statement-table tfoot td {
