@@ -3,6 +3,7 @@ import {
     useEffect,
     useMemo,
     useState,
+    type CSSProperties,
     type ChangeEvent
 } from "react";
 
@@ -436,9 +437,12 @@ function VerticalBarChart(props: VerticalBarChartProps) {
         },
         1
     );
+    const chartStyle = {
+        "--bar-count": String(items.length)
+    } as CSSProperties;
 
     return (
-        <div className="dashboard-bar-chart">
+        <div className="dashboard-bar-chart" style={chartStyle}>
             {items.map((item) => {
                 const height = Math.max((item.value / maxValue) * 100, 4);
 
