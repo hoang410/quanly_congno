@@ -18,7 +18,7 @@ export type AppNavigationItem = {
 export const appNavigationItems: AppNavigationItem[] = [
     {
         id: "dashboard",
-        label: "Dashboard",
+        label: "Tổng quan",
         group: "Tổng quan",
         description: "Theo dõi nhanh công nợ, doanh số và phát sinh trong kỳ",
         isReady: true

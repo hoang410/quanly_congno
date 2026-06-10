@@ -55,8 +55,7 @@ type CustomerTotal = {
 type ProductTotal = {
     code: string;
     name: string;
-    unit: string;
-    quantity: number;
+    count: number;
     amount: number;
 };
 
@@ -64,6 +63,20 @@ type TrendRow = {
     dateKey: string;
     increase: number;
     decrease: number;
+};
+
+type VerticalBarChartItem = {
+    key: string;
+    label: string;
+    detail: string;
+    value: number;
+    valueLabel: string;
+    tone?: "primary" | "accent";
+};
+
+type VerticalBarChartProps = {
+    items: VerticalBarChartItem[];
+    emptyMessage: string;
 };
 
 const emptyDashboardData: DashboardData = {
@@ -129,10 +142,25 @@ const formatNumber = (value: number) => {
     return numberFormatter.format(value);
 };
 
-const getCurrentMonthStartInputValue = () => {
-    const today = getTodayInputValue();
+const formatDateInputValue = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
 
-    return `${today.slice(0, 8)}01`;
+    return `${year}-${month}-${day}`;
+};
+
+const getOneYearAgoInputValue = () => {
+    const [
+        year,
+        month,
+        day
+    ] = getTodayInputValue().split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+
+    date.setFullYear(date.getFullYear() - 1);
+
+    return formatDateInputValue(date);
 };
 
 const isDateInRange = (
@@ -236,7 +264,6 @@ const buildTopProducts = (records: SheetRecord[]) => {
 
     records.forEach((record) => {
         const code = toText(record.ma_sp) || "unknown";
-        const quantity = parseNumber(record.so_luong);
         const amount = getLineAmount(record);
         const currentTotal = totalsByProduct.get(code);
 
@@ -246,20 +273,22 @@ const buildTopProducts = (records: SheetRecord[]) => {
                 {
                     code,
                     name: toText(record.ten_sp) || code,
-                    unit: toText(record.don_vi),
-                    quantity,
+                    count: 1,
                     amount
                 }
             );
             return;
         }
 
-        currentTotal.quantity += quantity;
+        currentTotal.count += 1;
         currentTotal.amount += amount;
     });
 
     return Array.from(totalsByProduct.values())
-        .sort(sortByAmountDesc)
+        .sort((firstProduct, secondProduct) => {
+            return secondProduct.count - firstProduct.count
+                || secondProduct.amount - firstProduct.amount;
+        })
         .slice(0, 5);
 };
 
@@ -389,6 +418,57 @@ function DashboardPanel(props: DashboardPanelProps) {
     );
 }
 
+function VerticalBarChart(props: VerticalBarChartProps) {
+    const {
+        items,
+        emptyMessage
+    } = props;
+
+    if (items.length === 0) {
+        return (
+            <p className="dashboard-empty">{emptyMessage}</p>
+        );
+    }
+
+    const maxValue = items.reduce(
+        (currentMaxValue, item) => {
+            return Math.max(currentMaxValue, item.value);
+        },
+        1
+    );
+
+    return (
+        <div className="dashboard-bar-chart">
+            {items.map((item) => {
+                const height = Math.max((item.value / maxValue) * 100, 4);
+
+                return (
+                    <div className="dashboard-bar-item" key={item.key}>
+                        <strong className="dashboard-bar-value">
+                            {item.valueLabel}
+                        </strong>
+
+                        <div className="dashboard-bar-track">
+                            <div
+                                className={`dashboard-bar-fill ${item.tone ?? "primary"}`}
+                                style={{ height: `${height}%` }}
+                            />
+                        </div>
+
+                        <strong className="dashboard-bar-label">
+                            {item.label}
+                        </strong>
+
+                        <span className="dashboard-bar-detail">
+                            {item.detail}
+                        </span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
 export default function DashboardPage() {
     const [dashboardData, setDashboardData] =
         useState<DashboardData>(emptyDashboardData);
@@ -396,7 +476,7 @@ export default function DashboardPage() {
         useState<LoadStatus>("loading");
     const [errorMessage, setErrorMessage] = useState<string>("");
     const [startDate, setStartDate] =
-        useState<string>(getCurrentMonthStartInputValue);
+        useState<string>(getOneYearAgoInputValue);
     const [endDate, setEndDate] = useState<string>(getTodayInputValue);
 
     const loadData = useCallback(async () => {
@@ -576,6 +656,32 @@ export default function DashboardPage() {
         };
     }, [dashboardData, endDate, startDate]);
 
+    const productChartItems = useMemo<VerticalBarChartItem[]>(() => {
+        return dashboardSummary.topProducts.map((product, index) => {
+            return {
+                key: product.code || String(index),
+                label: product.name,
+                detail: formatCurrency(product.amount),
+                value: product.count,
+                valueLabel: `${formatNumber(product.count)} đơn`,
+                tone: "primary"
+            };
+        });
+    }, [dashboardSummary.topProducts]);
+
+    const customerChartItems = useMemo<VerticalBarChartItem[]>(() => {
+        return dashboardSummary.topSalesCustomers.map((customer, index) => {
+            return {
+                key: customer.code || String(index),
+                label: customer.name,
+                detail: `${customer.code} - ${formatNumber(customer.count)} đơn`,
+                value: customer.amount,
+                valueLabel: formatCurrency(customer.amount),
+                tone: "accent"
+            };
+        });
+    }, [dashboardSummary.topSalesCustomers]);
+
     const maxTrendValue = useMemo(() => {
         return dashboardSummary.trendRows.reduce(
             (maxValue, trendRow) => {
@@ -599,13 +705,6 @@ export default function DashboardPage() {
     return (
         <section className="dashboard-page">
             <div className="dashboard-command-bar">
-                <div>
-                    <h1>Dashboard</h1>
-                    <p>
-                        Tổng quan công nợ, bán hàng, trả hàng và thanh toán theo dữ liệu sheet hiện có.
-                    </p>
-                </div>
-
                 <div className="dashboard-filters">
                     <label>
                         Từ ngày
@@ -742,6 +841,26 @@ export default function DashboardPage() {
                         </DashboardPanel>
 
                         <DashboardPanel
+                            title="Sản phẩm bán chạy"
+                            description="Đếm số đơn bán theo từng sản phẩm trong kỳ."
+                        >
+                            <VerticalBarChart
+                                items={productChartItems}
+                                emptyMessage="Chưa có sản phẩm bán ra trong kỳ."
+                            />
+                        </DashboardPanel>
+
+                        <DashboardPanel
+                            title="Doanh thu theo khách hàng"
+                            description="Tổng doanh số đơn bán theo từng khách hàng trong kỳ."
+                        >
+                            <VerticalBarChart
+                                items={customerChartItems}
+                                emptyMessage="Chưa có khách mua trong kỳ."
+                            />
+                        </DashboardPanel>
+
+                        <DashboardPanel
                             title="Phát sinh đã chốt"
                             description="Các dòng Phat_sinh_trong_ngay gần nhất trong kỳ."
                         >
@@ -782,59 +901,6 @@ export default function DashboardPage() {
                                             <div>
                                                 <strong>{customer.name}</strong>
                                                 <small>{customer.code}</small>
-                                            </div>
-                                            <strong>{formatCurrency(customer.amount)}</strong>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </DashboardPanel>
-
-                        <DashboardPanel
-                            title="Top sản phẩm bán ra"
-                            description="Theo tổng thành tiền đơn bán trong kỳ."
-                        >
-                            {dashboardSummary.topProducts.length === 0 ? (
-                                <p className="dashboard-empty">Chưa có sản phẩm bán ra trong kỳ.</p>
-                            ) : (
-                                <div className="rank-list">
-                                    {dashboardSummary.topProducts.map((product, index) => (
-                                        <div className="rank-row" key={product.code || index}>
-                                            <span>{index + 1}</span>
-                                            <div>
-                                                <strong>{product.name}</strong>
-                                                <small>
-                                                    {formatNumber(product.quantity)}
-                                                    {" "}
-                                                    {product.unit}
-                                                </small>
-                                            </div>
-                                            <strong>{formatCurrency(product.amount)}</strong>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </DashboardPanel>
-
-                        <DashboardPanel
-                            title="Top khách mua"
-                            description="Khách hàng có doanh số cao nhất trong kỳ."
-                        >
-                            {dashboardSummary.topSalesCustomers.length === 0 ? (
-                                <p className="dashboard-empty">Chưa có khách mua trong kỳ.</p>
-                            ) : (
-                                <div className="rank-list">
-                                    {dashboardSummary.topSalesCustomers.map((customer, index) => (
-                                        <div className="rank-row" key={customer.code || index}>
-                                            <span>{index + 1}</span>
-                                            <div>
-                                                <strong>{customer.name}</strong>
-                                                <small>
-                                                    {customer.code}
-                                                    {" - "}
-                                                    {formatNumber(customer.count)}
-                                                    {" dòng"}
-                                                </small>
                                             </div>
                                             <strong>{formatCurrency(customer.amount)}</strong>
                                         </div>

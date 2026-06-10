@@ -951,23 +951,10 @@
 .dashboard-command-bar {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 20px;
 }
 
-.dashboard-command-bar > div:first-child {
-  display: grid;
-  gap: 6px;
-}
-
-.dashboard-command-bar h1 {
-  color: var(--text);
-  font-size: 28px;
-  font-weight: 650;
-  line-height: 1.15;
-}
-
-.dashboard-command-bar p,
 .dashboard-period-note,
 .dashboard-panel-heading p,
 .dashboard-empty {
@@ -1170,6 +1157,74 @@
   background: var(--danger);
 }
 
+.dashboard-bar-chart {
+  min-height: 280px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.dashboard-bar-item {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto 180px auto auto;
+  gap: 7px;
+  justify-items: center;
+  text-align: center;
+}
+
+.dashboard-bar-value {
+  max-width: 100%;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.dashboard-bar-track {
+  width: min(54px, 100%);
+  height: 180px;
+  display: flex;
+  align-items: end;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+
+.dashboard-bar-fill {
+  width: 100%;
+  min-height: 4px;
+  border-radius: 5px 5px 0 0;
+  background: var(--primary);
+}
+
+.dashboard-bar-fill.accent {
+  background: var(--warning);
+}
+
+.dashboard-bar-label {
+  max-width: 100%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.dashboard-bar-detail {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--muted-text);
+  font-size: 11px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .dashboard-mini-table,
 .rank-list {
   display: grid;
@@ -1280,6 +1335,19 @@
 
   .dashboard-panel.wide {
     grid-column: auto;
+  }
+
+  .dashboard-bar-chart {
+    min-height: 240px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-bar-item {
+    grid-template-rows: auto 150px auto auto;
+  }
+
+  .dashboard-bar-track {
+    height: 150px;
   }
 
   .trend-row {
