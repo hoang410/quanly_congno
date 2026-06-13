@@ -389,6 +389,8 @@ export default function SheetModulePage(props: SheetModulePageProps) {
     const [lookupErrorMessage, setLookupErrorMessage] = useState<string>("");
     const [actionMessage, setActionMessage] = useState<string>("");
     const [deleteTarget, setDeleteTarget] = useState<SheetRecord | null>(null);
+    const [duplicateWarningMessage, setDuplicateWarningMessage] =
+        useState<string>("");
     const [isBulkOrderOpen, setIsBulkOrderOpen] = useState<boolean>(false);
     const [reconciliationCustomer, setReconciliationCustomer] =
         useState<SheetRecord | null>(null);
@@ -585,6 +587,7 @@ export default function SheetModulePage(props: SheetModulePageProps) {
         setFormData(buildEmptyFormData(config.formFields));
         setFormMessage("");
         setActionMessage("");
+        setDuplicateWarningMessage("");
     };
 
     const openEditForm = (record: SheetRecord) => {
@@ -596,6 +599,7 @@ export default function SheetModulePage(props: SheetModulePageProps) {
         ));
         setFormMessage("");
         setActionMessage("");
+        setDuplicateWarningMessage("");
     };
 
     const closeForm = () => {
@@ -603,12 +607,18 @@ export default function SheetModulePage(props: SheetModulePageProps) {
         setEditingRecord(null);
         setFormData(buildEmptyFormData(config.formFields));
         setFormMessage("");
+        setDuplicateWarningMessage("");
+    };
+
+    const closeDuplicateWarning = () => {
+        setDuplicateWarningMessage("");
     };
 
     const handleRecordFormSubmit = async (
         event: FormEvent<HTMLFormElement>
     ) => {
         event.preventDefault();
+        setDuplicateWarningMessage("");
 
         const validationMessage = validateFormData(
             config.formFields,
@@ -629,6 +639,7 @@ export default function SheetModulePage(props: SheetModulePageProps) {
 
         if (duplicateValidationMessage !== "") {
             setFormMessage(duplicateValidationMessage);
+            setDuplicateWarningMessage(duplicateValidationMessage);
             return;
         }
 
@@ -1101,6 +1112,33 @@ export default function SheetModulePage(props: SheetModulePageProps) {
                                 disabled={isDeleting}
                             >
                                 {isDeleting ? "Đang xoá..." : "Xoá"}
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            ) : null}
+
+            {duplicateWarningMessage !== "" ? (
+                <div className="confirm-backdrop" role="presentation">
+                    <section
+                        className="confirm-dialog duplicate-warning-dialog"
+                        role="alertdialog"
+                        aria-modal="true"
+                        aria-labelledby="duplicate-warning-title"
+                    >
+                        <h2 id="duplicate-warning-title">
+                            Dữ liệu bị trùng
+                        </h2>
+
+                        <p>{duplicateWarningMessage}</p>
+
+                        <div className="confirm-actions">
+                            <button
+                                className="command-button"
+                                type="button"
+                                onClick={closeDuplicateWarning}
+                            >
+                                Đã hiểu
                             </button>
                         </div>
                     </section>
