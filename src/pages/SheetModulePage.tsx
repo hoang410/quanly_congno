@@ -181,6 +181,89 @@ const validateFormData = (
     return "";
 };
 
+const normalizeComparableText = (value: SheetRecordValue) => {
+    return toText(value)
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLocaleLowerCase("vi-VN");
+};
+
+const normalizePhoneText = (value: SheetRecordValue) => {
+    return toText(value).replace(/\D/g, "");
+};
+
+const isSameEditingRecord = (
+    record: SheetRecord,
+    editingRecord: SheetRecord | null
+) => {
+    if (editingRecord === null) {
+        return false;
+    }
+
+    const recordId = toText(record.id);
+    const editingRecordId = toText(editingRecord.id);
+
+    if (recordId !== "" && editingRecordId !== "") {
+        return recordId === editingRecordId;
+    }
+
+    return record === editingRecord;
+};
+
+const validateDuplicateRecordData = (
+    config: SheetModuleConfig,
+    formData: FormDataState,
+    records: SheetRecord[],
+    editingRecord: SheetRecord | null
+) => {
+    if (config.id === "products") {
+        const productName = formData.ten_sp?.trim() ?? "";
+        const normalizedProductName = normalizeComparableText(productName);
+
+        const duplicatedProduct = records.find((record) => {
+            return !isSameEditingRecord(record, editingRecord)
+                && normalizeComparableText(record.ten_sp) === normalizedProductName;
+        });
+
+        if (duplicatedProduct !== undefined) {
+            return `Tên sản phẩm "${productName}" đã tồn tại. Vui lòng nhập tên khác.`;
+        }
+    }
+
+    if (config.id === "customers") {
+        const customerName = formData.ten_kh?.trim() ?? "";
+        const phone = formData.dien_thoai?.trim() ?? "";
+        const normalizedCustomerName = normalizeComparableText(customerName);
+        const normalizedPhone = normalizePhoneText(phone);
+
+        const duplicatedCustomerName = records.find((record) => {
+            return !isSameEditingRecord(record, editingRecord)
+                && normalizeComparableText(record.ten_kh) === normalizedCustomerName;
+        });
+
+        if (duplicatedCustomerName !== undefined) {
+            return `Tên khách hàng "${customerName}" đã tồn tại. Vui lòng nhập tên khác.`;
+        }
+
+        if (normalizedPhone !== "") {
+            const duplicatedCustomerPhone = records.find((record) => {
+                return !isSameEditingRecord(record, editingRecord)
+                    && normalizePhoneText(record.dien_thoai) === normalizedPhone;
+            });
+
+            if (duplicatedCustomerPhone !== undefined) {
+                const duplicatedCustomerTitle =
+                    toText(duplicatedCustomerPhone.ten_kh)
+                    || toText(duplicatedCustomerPhone.ma_kh);
+
+                return `Số điện thoại "${phone}" đã được dùng cho khách hàng ${duplicatedCustomerTitle}.`;
+            }
+        }
+    }
+
+    return "";
+};
+
 const buildPayload = (
     fields: SheetFormField[],
     formData: FormDataState
@@ -534,6 +617,18 @@ export default function SheetModulePage(props: SheetModulePageProps) {
 
         if (validationMessage !== "") {
             setFormMessage(validationMessage);
+            return;
+        }
+
+        const duplicateValidationMessage = validateDuplicateRecordData(
+            config,
+            formData,
+            records,
+            editingRecord
+        );
+
+        if (duplicateValidationMessage !== "") {
+            setFormMessage(duplicateValidationMessage);
             return;
         }
 
